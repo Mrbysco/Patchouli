@@ -30,7 +30,19 @@ public final class SerializationUtil {
 			return fallback;
 		}
 	}
-
+	public static ResourceLocation getAsResourceLocation(JsonObject object, String key, @Nullable ResourceLocation fallback, String prefix) {
+		// This adds backwards compatibility for old model locations that don't have the `item/` prefix
+		if (object.has(key)) {
+			var loc = GsonHelper.convertToString(object.get(key), key);
+			if (!prefix.isEmpty() && !loc.contains(prefix)) {
+				// loc= "minecraft:foo" -> "minecraft:item/foo"
+				loc = loc.substring(0, loc.indexOf(':') + 1) + prefix + loc.substring(loc.indexOf(':') + 1);
+			}
+			return ResourceLocation.tryParse(loc);
+		} else {
+			return fallback;
+		}
+	}
 	@Nullable
 	public static <T extends Enum<T>> T getAsEnum(JsonObject object, String key, Class<T> clz, @Nullable T fallback) {
 		if (object.has(key)) {
